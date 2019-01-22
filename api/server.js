@@ -1,15 +1,47 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const KnexSessionStore = require('connect-session-knex')(session);
 const db = require('../data/dbConfig');
+
+const sessionConfig = {
+  name: 'foobarbanana',
+  secret: 'woefasn.asdfji--sdfjio_asjfAjifOsdfjqeo',
+  cookie: {
+    maxAge: 10 * 60 * 1000, // 10 minutes
+    secure: false, // USE TRUE IN PRODUCTION!
+  },
+  httpOnly: true,
+  resave: false, // read more about this
+  saveUnitialized: false, // and this
+  store: 
+    new KnexSessionStore({ 
+      tablename: 'sessions',
+      sidfieldname: 'sid',
+      knex: db,
+      createTable: true, 
+      clearInterval: 1000 * 60 * 60, // clear expired sessions every hour
+    })
+}
 
 const server = express();
 server.use(express.json());
+server.use(session(sessionConfig));
 
 server.get('/', (req, res) => {
   res.status(200).send('server is running!');
 });
 
-server.get('/api/users', (req, res) => {
+function protect(req, res, next) {
+  if(req.session && req.session.user) {
+    next();
+  } else {
+    res.status(401).json({message: 'you are not authorized. please log in'})
+  }
+}
+
+// protect this route, user must be logged in
+server.get('/api/users', protect, (req, res) => {
   db('users')
     .select('username', 'id')
     .then(list => {
@@ -33,19 +65,32 @@ server.post('/api/register', (req, res) => {
 });
 
 server.post('/api/login', (req, res) => {
-  console.log(req.body);
   db('users')
     .where({username: req.body.username})
     .first()
     .then(user => {
-      console.log(user);
       if (user && bcrypt.compareSync(req.body.password, user.password)) {
-        res.status(200).json('logged in!');
+        req.session.user = user;
+        res.status(200).json(`thanks for logging in, ${req.body.username}`);
       } else {
-        res.status(401).json({message: 'thou shalt not pass'});
+        res.status(401).json({message: 'thou shalt not pass! invalid username or password'});
       }
     })
     .catch(err => res.status(500).json({error: `oh no! ${err}`}));
 });
+
+server.get('/api/logout', (req, res) => {
+  if (req.session && req.session.user) {
+    req.session.destroy(err => {
+      if (err) {
+        res.status(500).json({error: `there was an error when logging out: ${err}`})
+      } else {
+        res.status(200).json({message: 'you have been logged out'})
+      }
+    })
+  } else {
+    res.json({message: 'try logging in before you log out ;p'})
+  }
+})
 
 module.exports = server;
