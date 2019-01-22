@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const KnexSessionStore = require('connect-session-knex')(session);
+const cors = require('cors');
 const db = require('../data/dbConfig');
 
 const sessionConfig = {
@@ -27,6 +28,7 @@ const sessionConfig = {
 const server = express();
 server.use(express.json());
 server.use(session(sessionConfig));
+server.use(cors());
 
 server.get('/', (req, res) => {
   res.status(200).send('server is running!');
@@ -59,7 +61,9 @@ server.post('/api/register', (req, res) => {
   db('users')
     .insert(creds)
     .then(id => {
-      res.status(201).send(id);
+      console.log(id);
+      
+      res.status(201).json(id);
     })
     .catch(err => res.status(500).json(err));
 });
