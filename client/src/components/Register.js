@@ -1,45 +1,87 @@
 import React from 'react';
 import axios from 'axios';
+import styled from 'styled-components';
 
-class Register extends React.Component {
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  input {
+    width: 60%;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: 20px;
+    background-color: ${props => props.theme.lBlue}
+  }
+
+`;
+
+
+class RegisterLogin extends React.Component {
   constructor() {
     super();
     this.state = {
+      user: {
       username: '',
       password: '',
+      },
+      showModal: false,
+      modalMessage: '',
     }
   }
 
+  clearFormFields = () => {
+    this.setState({ user: {username: '', password: ''} })
+  }
+
   handleChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value })
+    const value = {[e.target.name]: e.target.value};
+    this.setState({ user: {...this.state.user, ...value}})
   }
 
   handleSubmit = (e) => {
+    this.setState({ modalMessage: '' })
     e.preventDefault();
-    axios.post('http://localhost:5000/api/register', this.state)
+    if (this.props.login) {
+      axios.post('http://localhost:5000/api/login', this.state.user)
+        .then(res => {
+          console.log(res);
+          this.setState({modalMessage: res.data, showModal: true})
+        })
+        .catch(err => {
+          console.log(err.message);
+          this.setState({modalMessage: err.message, showModal: true});
+        })
+    } else {
+      // registering
+      
+    axios.post('http://localhost:5000/api/register', this.state.user)
       .then(res => {
-        console.log(res);
         
-        if (res) {
-          console.log('thank you for registering. You may now log in');
+        if (res.status === 201) {
+          this.setState({modalMessage: `Thank you for registering, ${this.state.user.username}. You may now log in.`, showModal: true})
         } else {
-          console.log('there was an error logging in');
+          this.setState({modalMessage: 'there was an error registering', showModal: true});
         }
       })
       .catch(err => console.log());
+  }
+    this.clearFormFields();
   }
 
   render() {
   return (
     <>
-    <h2>register</h2>
-    <form onSubmit={this.handleSubmit}>
-    <input type="text" name="username" placeholder="username" onChange={this.handleChange} />
-    <input type="password" name="password" placeholder="password" onChange={this.handleChange} />
+    <h2>{this.props.login ? 'login' : 'register'}</h2>
+    <Form onSubmit={this.handleSubmit}>
+    <input type="text" name="username" placeholder="username" value={this.state.user.username} onChange={this.handleChange} />
+    <input type="password" name="password" value={this.state.user.password}placeholder="password" onChange={this.handleChange} />
     <input type="submit" />
-    </form>
+    </Form>
+    {this.state.showModal && <h1>{this.state.modalMessage}</h1>}
     </>
   )
 }
 }
-export default Register;
+export default RegisterLogin;

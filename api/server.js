@@ -35,18 +35,28 @@ server.get('/', (req, res) => {
 });
 
 function protect(req, res, next) {
+  console.log(req.session.user);
+  
+  
   if(req.session && req.session.user) {
+    console.log('clear');
     next();
   } else {
+    console.log('denied!');
+    
     res.status(401).json({message: 'you are not authorized. please log in'})
   }
 }
 
 // protect this route, user must be logged in
 server.get('/api/users', protect, (req, res) => {
+  console.log(req.headers);
+  
   db('users')
     .select('username', 'id')
     .then(list => {
+      console.log(list);
+      
       res.status(200).json(list);
     });
 });
@@ -69,10 +79,13 @@ server.post('/api/register', (req, res) => {
 });
 
 server.post('/api/login', (req, res) => {
+  console.log(req.body);
+  
   db('users')
     .where({username: req.body.username})
     .first()
     .then(user => {
+      
       if (user && bcrypt.compareSync(req.body.password, user.password)) {
         req.session.user = user;
         res.status(200).json(`thanks for logging in, ${req.body.username}`);
