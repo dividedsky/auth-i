@@ -42,7 +42,7 @@ server.post('/api/login', (req, res) => {
       if (user && bcrypt.compareSync(req.body.password, user.password)) {
         res.status(200).json('logged in!');
       } else {
-        res.status(400).json({message: 'thou shalt not pass'});
+        res.status(401).json({message: 'thou shalt not pass'});
       }
     })
     .catch(err => res.status(500).json({error: `oh no! ${err}`}));
