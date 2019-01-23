@@ -28,7 +28,7 @@ const sessionConfig = {
 const server = express();
 server.use(express.json());
 server.use(session(sessionConfig));
-server.use(cors());
+server.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
 server.get('/', (req, res) => {
   res.status(200).send('server is running!');
@@ -39,10 +39,8 @@ function protect(req, res, next) {
   
   
   if(req.session && req.session.user) {
-    console.log('clear');
     next();
   } else {
-    console.log('denied!');
     
     res.status(401).json({message: 'you are not authorized. please log in'})
   }
@@ -50,7 +48,7 @@ function protect(req, res, next) {
 
 // protect this route, user must be logged in
 server.get('/api/users', protect, (req, res) => {
-  console.log(req.headers);
+  console.log('headers: \n', req.headers);
   
   db('users')
     .select('username', 'id')

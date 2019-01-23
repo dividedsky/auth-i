@@ -23,8 +23,8 @@ class RegisterLogin extends React.Component {
     super();
     this.state = {
       user: {
-      username: '',
-      password: '',
+        username: '',
+        password: '',
       },
       showModal: false,
       modalMessage: '',
@@ -46,11 +46,9 @@ class RegisterLogin extends React.Component {
     if (this.props.login) {
       axios.post('http://localhost:5000/api/login', this.state.user)
         .then(res => {
-          console.log(res);
           this.setState({modalMessage: res.data, showModal: true})
         })
         .catch(err => {
-          console.log(err.message);
           this.setState({modalMessage: err.message, showModal: true});
         })
     } else {

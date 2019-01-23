@@ -19,7 +19,6 @@ class App extends Component {
       <ThemeProvider theme={theme}>
       <div className="App">
               <Route path="/" component={Login} />
-              <Route path="/users" component={Users} />
       </div>
   </ThemeProvider>
       </>

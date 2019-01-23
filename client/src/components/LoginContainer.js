@@ -2,17 +2,16 @@ import React from 'react';
 import styled from 'styled-components';
 import { Route, NavLink } from 'react-router-dom';
 import RegisterLogin from './Register';
+import Users from './Users';
 
 const LoginWrapper = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -80%);
+  transform: translate(-50%, -50%);
   width: 40%;
-  height: 400px;
   border: 1px solid gray;
   border-radius: 8px;
-  //background-color: #000;
   background-color: ${props => props.theme.dBlue}
   margin: 40px auto;
   color: ${props => props.theme.red}
@@ -57,6 +56,10 @@ class LoginContainer extends React.Component {
         <Route
           path="/register"
           render={props => <RegisterLogin {...props} />}
+        />
+        <Route
+          path="/users"
+          render={props => <Users {...props} />}
         />
       </LoginWrapper>
     );
